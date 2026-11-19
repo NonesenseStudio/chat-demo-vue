@@ -1,6 +1,6 @@
-import { useSettings } from '../services/settings.js'
-import { en } from './en.js'
-import { zh } from './zh.js'
+import { useSettingsStore, type Locale } from '@/stores/settings'
+import { en } from './en'
+import { zh } from './zh'
 
 export type TranslationKey = keyof typeof zh
 export type TranslationParams = Record<string, string | number>
@@ -27,8 +27,16 @@ const translators = {
   'en-US': createTranslate(en),
 }
 
-/** 组件订阅语言变化；普通函数在调用时读取当前语言。 */
-export const useTranslate = () => useSettings((state) => translators[state.locale])
+export const translateForLocale = (locale: Locale) => translators[locale]
+
+/**
+ * 返回跟随当前语言的翻译函数；在渲染与 computed 中调用时自动跟踪语言变化，
+ * 普通函数在调用时读取当前语言。
+ */
+export const useTranslate = (): typeof translate => {
+  const settings = useSettingsStore()
+  return (key, params) => translators[settings.locale](key, params)
+}
 
 export const translate = (key: TranslationKey, params?: TranslationParams): string =>
-  translators[useSettings.getState().locale](key, params)
+  translators[useSettingsStore().locale](key, params)

@@ -1,12 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type MutableRefObject,
-  type RefObject,
-} from 'react'
+import { shallowRef, type ShallowRef } from 'vue'
+import { watchAfterRender } from '@/composables/watchAfterRender'
 
 /** 浮层与视口边缘的最小间距 */
 export const VIEWPORT_PADDING = 8
@@ -83,24 +76,18 @@ const resolveSide = (spaceAbove: number, spaceBelow: number, preferred: Side, ne
  * 因此需要在挂载后测量自身尺寸：未测量到之前位置为 null。
  */
 export const useAnchoredPosition = <T extends HTMLElement, F extends HTMLElement>(
-  open: boolean,
-  {
-    side = 'bottom',
-    align = 'start',
-    alignOffset = 0,
-    offset = 4,
-    maxHeight,
-    minSpace = 160,
-    measureFirstChild = false,
-    measureKey,
-  }: AnchoredOptions = {}
+  open: () => boolean,
+  options: () => AnchoredOptions = () => ({})
 ) => {
-  const anchorRef = useRef<T | null>(null) as MutableRefObject<T | null>
-  const floatingRef = useRef<F | null>(null) as MutableRefObject<F | null>
-  const [position, setPosition] = useState<AnchoredPosition | null>(null)
-
-  /** 位置没有实际变化时不更新状态，避免重新测量引起多余渲染 */
-  const applyPosition = useCallback((next: AnchoredPosition) => {
+  const anchorRef = shallowRef<T | null>(null) as ShallowRef<T | null>
+  const floatingRef = shallowRef<F | null>(null) as ShallowRef<F | null>
+  const position = shallowRef<AnchoredPosition | null>(null)
+  const setPosition = (
+    next: typeof position.value | ((previous: typeof position.value) => typeof position.value)
+  ) => {
+    position.value = typeof next === 'function' ? next(position.value) : next
+  }
+  const applyPosition = (next: AnchoredPosition) => {
     setPosition((previous) =>
       previous &&
       previous.top === next.top &&
@@ -110,149 +97,166 @@ export const useAnchoredPosition = <T extends HTMLElement, F extends HTMLElement
         ? previous
         : next
     )
-  }, [])
-
-  /** 触发元素自身不产生盒子时（如 display: contents），用它第一个子元素测量 */
-  const getAnchor = useCallback(
-    () =>
-      measureFirstChild
-        ? (anchorRef.current?.firstElementChild as HTMLElement | null)
-        : anchorRef.current,
-    [anchorRef, measureFirstChild]
-  )
-
-  // 测量只在浮层打开且已挂载后进行，ref 对象稳定，回调不随渲染重建
-  const update = useCallback(() => {
+  }
+  const getAnchor = () =>
+    (options().measureFirstChild ?? false)
+      ? (anchorRef.value?.firstElementChild as HTMLElement | null)
+      : anchorRef.value
+  const update = () => {
     const anchor = getAnchor()
-    const floating = floatingRef.current
+    const floating = floatingRef.value
     if (!anchor || !floating) {
       return
     }
     const rect = anchor.getBoundingClientRect()
-    const spaceAbove = rect.top - offset - VIEWPORT_PADDING
-    const spaceBelow = window.innerHeight - rect.bottom - offset - VIEWPORT_PADDING
+    const spaceAbove = rect.top - (options().offset ?? 4) - VIEWPORT_PADDING
+    const spaceBelow = window.innerHeight - rect.bottom - (options().offset ?? 4) - VIEWPORT_PADDING
 
+    const { maxHeight } = options()
     if (maxHeight === undefined) {
       const { width, height } = floating.getBoundingClientRect()
-      const resolved = resolveSide(spaceAbove, spaceBelow, side, height)
+      const resolved = resolveSide(spaceAbove, spaceBelow, options().side ?? 'bottom', height)
       applyPosition({
-        top: resolved === 'top' ? rect.top - offset - height : rect.bottom + offset,
-        left: alignLeft(rect, width, align, alignOffset),
+        top:
+          resolved === 'top'
+            ? rect.top - (options().offset ?? 4) - height
+            : rect.bottom + (options().offset ?? 4),
+        left: alignLeft(rect, width, options().align ?? 'start', options().alignOffset ?? 0),
       })
       return
     }
 
-    const resolved = resolveSide(spaceAbove, spaceBelow, side, minSpace)
+    const resolved = resolveSide(
+      spaceAbove,
+      spaceBelow,
+      options().side ?? 'bottom',
+      options().minSpace ?? 160
+    )
     const available = Math.max(0, resolved === 'top' ? spaceAbove : spaceBelow)
     // 内容比可用空间小时按内容收口，避免浮层留出多余空白
     const height = Math.max(40, Math.min(maxHeight, available, floating.scrollHeight + 2))
     applyPosition({
       top:
         resolved === 'top'
-          ? Math.max(VIEWPORT_PADDING, rect.top - offset - height)
-          : rect.bottom + offset,
+          ? Math.max(VIEWPORT_PADDING, rect.top - (options().offset ?? 4) - height)
+          : rect.bottom + (options().offset ?? 4),
       right: Math.max(VIEWPORT_PADDING, window.innerWidth - rect.right),
       maxHeight: height,
     })
-  }, [align, alignOffset, applyPosition, floatingRef, getAnchor, maxHeight, minSpace, offset, side])
-
-  // 打开时与内容变化时同步测量，必须在绘制前完成
-  useLayoutEffect(() => {
-    if (open) {
-      update()
-    }
-  }, [measureKey, open, update])
-
-  /*
-   * 打开期间跟踪渲染时无法预知的位置来源：浮层或触发元素尺寸变化、窗口尺寸变化、
-   * 任意滚动容器滚动。对应 @floating-ui 的 autoUpdate，避免浮层停在旧位置。
-   */
-  useLayoutEffect(() => {
-    if (!open) {
-      return
-    }
-    const floating = floatingRef.current
-    if (!floating) {
-      return
-    }
-    const anchor = getAnchor()
-    const observer = new ResizeObserver(() => update())
-    observer.observe(floating)
-    if (anchor) {
-      observer.observe(anchor)
-    }
-    window.addEventListener('scroll', update, { capture: true, passive: true })
-    window.addEventListener('resize', update, { passive: true })
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('scroll', update, { capture: true })
-      window.removeEventListener('resize', update)
-    }
-  }, [floatingRef, getAnchor, open, update])
-
-  useEffect(() => {
-    if (!open) {
-      setPosition(null)
-    }
-  }, [open])
-
+  }
+  watchAfterRender(
+    () => {
+      if (open()) {
+        update()
+      }
+    },
+    () => [options().measureKey, open(), floatingRef.value]
+  )
+  watchAfterRender(
+    () => {
+      if (!open()) {
+        return
+      }
+      const floating = floatingRef.value
+      if (!floating) {
+        return
+      }
+      const anchor = getAnchor()
+      const observer = new ResizeObserver(() => update())
+      observer.observe(floating)
+      if (anchor) {
+        observer.observe(anchor)
+      }
+      window.addEventListener('scroll', update, { capture: true, passive: true })
+      window.addEventListener('resize', update, { passive: true })
+      return () => {
+        observer.disconnect()
+        window.removeEventListener('scroll', update, { capture: true })
+        window.removeEventListener('resize', update)
+      }
+    },
+    () => [floatingRef.value, anchorRef.value, open()]
+  )
+  watchAfterRender(
+    () => {
+      if (!open()) {
+        setPosition(null)
+      }
+    },
+    () => [open()]
+  )
   return { anchorRef, floatingRef, position }
 }
 
 /** 点击浮层与触发元素之外、或按 Esc 时关闭 */
 export const useDismiss = (
-  open: boolean,
-  refs: RefObject<HTMLElement | null>[],
+  open: () => boolean,
+  refs: ShallowRef<HTMLElement | null>[],
   onDismiss: () => void,
   { captureEscape = false }: { captureEscape?: boolean } = {}
 ) => {
-  const onDismissRef = useRef(onDismiss)
-  onDismissRef.current = onDismiss
-  const refsRef = useRef(refs)
-  refsRef.current = refs
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node
-      const inside = refsRef.current.some((ref) => ref.current?.contains(target))
-      if (!inside) {
-        onDismissRef.current()
-      }
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') {
+  const onDismissRef = shallowRef(onDismiss)
+  onDismissRef.value = onDismiss
+  const refsRef = shallowRef(refs)
+  refsRef.value = refs
+  watchAfterRender(
+    () => {
+      if (!open()) {
         return
       }
-      if (captureEscape) {
-        event.stopPropagation()
+      const onPointerDown = (event: PointerEvent) => {
+        const target = event.target as Node
+        const inside = refsRef.value.some((ref) => ref.value?.contains(target))
+        if (!inside) {
+          onDismissRef.value()
+        }
       }
-      onDismissRef.current()
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown, captureEscape)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown, captureEscape)
-    }
-  }, [open, captureEscape])
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key !== 'Escape') {
+          return
+        }
+        if (captureEscape) {
+          event.stopPropagation()
+        }
+        onDismissRef.value()
+      }
+      document.addEventListener('pointerdown', onPointerDown)
+      document.addEventListener('keydown', onKeyDown, captureEscape)
+      return () => {
+        document.removeEventListener('pointerdown', onPointerDown)
+        document.removeEventListener('keydown', onKeyDown, captureEscape)
+      }
+    },
+    () => [open(), captureEscape]
+  )
 }
 
 /** 悬停类浮层的进出延迟：同一时间只有一个待执行的切换 */
 export const useDelayedOpen = () => {
-  const [open, setOpen] = useState(false)
-  const timer = useRef(0)
-  useEffect(() => () => window.clearTimeout(timer.current), [])
-  const schedule = useCallback((next: boolean, delay: number) => {
-    window.clearTimeout(timer.current)
+  const open = shallowRef(false)
+  const setOpen = (next: typeof open.value) => {
+    open.value = next
+  }
+  const timer = shallowRef(0)
+  watchAfterRender(() => () => window.clearTimeout(timer.value))
+  const schedule = (next: boolean, delay: number) => {
+    window.clearTimeout(timer.value)
     if (delay <= 0) {
       setOpen(next)
       return
     }
-    timer.current = window.setTimeout(() => setOpen(next), delay)
-  }, [])
-  const cancel = useCallback(() => window.clearTimeout(timer.current), [])
+    timer.value = window.setTimeout(() => setOpen(next), delay)
+  }
+  const cancel = () => window.clearTimeout(timer.value)
   return { open, setOpen, schedule, cancel }
 }
+
+export const anchoredStyles = (position: AnchoredPosition | null) =>
+  position
+    ? {
+        top: position.top + 'px',
+        left: position.left === undefined ? undefined : position.left + 'px',
+        right: position.right === undefined ? undefined : position.right + 'px',
+        maxHeight: position.maxHeight === undefined ? undefined : position.maxHeight + 'px',
+      }
+    : ({ visibility: 'hidden' } as const)

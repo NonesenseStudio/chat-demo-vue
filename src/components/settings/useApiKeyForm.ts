@@ -1,50 +1,67 @@
-import { useState } from 'react'
-import { ApiError, verifyApiKey } from '../../services/api/client.js'
-import { classifyApiError } from '../../services/api/errors.js'
-import { setApiKey } from '../../services/settings.js'
-import { useTranslate } from '../../i18n/index.js'
+import { computed, reactive, ref } from 'vue'
+import { ApiError, verifyApiKey } from '@/services/api/client'
+import { classifyApiError } from '@/services/api/errors'
+import { useSettingsStore } from '@/stores/settings'
+import { useTranslate } from '@/i18n'
 
 /** 输入 API Key 后先用 GET /models 校验，通过才保存 */
 export const useApiKeyForm = (onSaved?: () => void) => {
   const t = useTranslate()
-  const [value, setValue] = useState('')
-  const [verifying, setVerifying] = useState(false)
-  const [failure, setFailure] = useState<{ cause: unknown } | null>(null)
-  const cause = failure?.cause
-  const error =
-    failure === null
+  const settings = useSettingsStore()
+  const value = ref('')
+  const verifying = ref(false)
+  const failure = ref<{ cause: unknown } | null>(null)
+  const cause = computed(() => failure.value?.cause)
+  const error = computed(() =>
+    failure.value === null
       ? null
-      : classifyApiError(cause) === 'unauthorized'
+      : classifyApiError(cause.value) === 'unauthorized'
         ? t('apiKeyInvalid')
-        : classifyApiError(cause) === 'network'
+        : classifyApiError(cause.value) === 'network'
           ? t('commonNetworkErrorToast')
           : t('apiKeyVerificationFailed', {
               message:
-                cause instanceof ApiError && cause.localMessage
-                  ? t(cause.localMessage.key, cause.localMessage.params)
-                  : cause instanceof Error
-                    ? cause.message
-                    : String(cause),
+                cause.value instanceof ApiError && cause.value.localMessage
+                  ? t(cause.value.localMessage.key, cause.value.localMessage.params)
+                  : cause.value instanceof Error
+                    ? cause.value.message
+                    : String(cause.value),
             })
-
+  )
   const submit = async () => {
-    const apiKey = value.trim()
-    if (!apiKey || verifying) {
+    const apiKey = value.value.trim()
+    if (!apiKey || verifying.value) {
       return
     }
-    setVerifying(true)
-    setFailure(null)
+    verifying.value = true
+    failure.value = null
     try {
       await verifyApiKey(apiKey)
-      setApiKey(apiKey)
-      setValue('')
+      settings.setApiKey(apiKey)
+      value.value = ''
       onSaved?.()
     } catch (e) {
-      setFailure({ cause: e })
+      failure.value = { cause: e }
     } finally {
-      setVerifying(false)
+      verifying.value = false
     }
   }
-
-  return { value, setValue, verifying, error, submit }
+  return { value, verifying, error, submit }
 }
+
+/** API Key 的编辑状态：输入框与移动端底部的「确定」按钮共用 */
+export const useApiKeyEditor = () => {
+  const settings = useSettingsStore()
+  const editing = ref(false)
+  const form = useApiKeyForm(() => {
+    editing.value = false
+  })
+  return reactive({
+    settings,
+    editing,
+    form,
+    showInput: computed(() => !settings.apiKey || editing.value),
+  })
+}
+
+export type ApiKeyEditor = ReturnType<typeof useApiKeyEditor>

@@ -1,5 +1,5 @@
 import { getRegionName, provinces, type UserLocation } from '../location.js'
-import type { Locale } from '../settings.js'
+import type { Locale } from '@/stores/settings'
 import { formatDate } from '../../utils/format.js'
 import { translate } from '../../i18n/index.js'
 

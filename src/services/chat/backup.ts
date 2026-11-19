@@ -1,6 +1,6 @@
 import { formatDate } from '../../utils/format.js'
+import { useChatStore } from '@/stores/chat'
 import * as db from './db.js'
-import { replaceHistory, useChatStore } from './store.js'
 import type { Session } from './types.js'
 
 export { BackupError } from './history/errors.js'
@@ -20,7 +20,8 @@ const backupFileName = (date: Date) => `deepseek_data-${formatDate(date)}.zip`
 export const exportHistory = (): Promise<{ name: string; blob: Blob }> =>
   enqueueBackup(async () => {
     // 列表和已加载内容保留导出开始时的快照；未打开的会话逐条读取，不填满详情缓存。
-    const { sessions, sessionCache } = useChatStore.getState()
+    const chat = useChatStore()
+    const { sessions, sessionCache } = chat
     async function* readSessions(): AsyncGenerator<Session> {
       for (const summary of sessions) {
         const session = Object.hasOwn(sessionCache, summary.id)
@@ -47,11 +48,11 @@ export const importHistory = (file: File): Promise<number> =>
   enqueueBackup(async () => {
     const { checkArchiveFormat, importArchive } = await import('./history/importArchive.js')
     await checkArchiveFormat(file)
-    return replaceHistory(() => importArchive(file))
+    return useChatStore().replaceHistory(() => importArchive(file))
   })
 
 /** 确认删除后调用：以空历史原子替换全部本地会话与附件，保留 API Key 和其他设置。 */
 export const clearHistory = (): Promise<void> =>
   enqueueBackup(async () => {
-    await replaceHistory(async () => {})
+    await useChatStore().replaceHistory(async () => {})
   })

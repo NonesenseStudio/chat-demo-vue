@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { TranslationMessage } from '../../i18n/index.js'
-import { transcribe } from '../../services/api/speech.js'
-import { startRecording, type Recording } from '../../services/speech/recorder.js'
-import { useSettings } from '../../services/settings.js'
-import { showToast } from '../base/toastState.js'
+import { shallowRef } from 'vue'
+import { watchAfterRender } from '@/composables/watchAfterRender'
+
+import type { TranslationMessage } from '@/i18n'
+import { transcribe } from '@/services/api/speech'
+import { startRecording, type Recording } from '@/services/speech/recorder'
+import { useSettingsStore } from '@/stores/settings'
+import { showToast } from '@/stores/toast'
 
 export type VoiceInputStatus = 'idle' | 'recording' | 'transcribing'
 
@@ -30,37 +32,39 @@ const describeRecordingError = (error: unknown): TranslationMessage => {
  * 转写中再次点击取消。录满 120 秒自动结束。
  */
 export const useVoiceInput = (onText: (text: string) => void) => {
-  const [status, setStatus] = useState<VoiceInputStatus>('idle')
-  /** 本次录音已录秒数，只在录音中递增 */
-  const [seconds, setSeconds] = useState(0)
-  const recordingRef = useRef<Recording | null>(null)
-  const controllerRef = useRef<AbortController | null>(null)
-  const operationRef = useRef(0)
-  const onTextRef = useRef(onText)
-  onTextRef.current = onText
-
-  const cancelOperation = useCallback(() => {
-    operationRef.current++
-    recordingRef.current?.cancel()
-    recordingRef.current = null
-    controllerRef.current?.abort()
-    controllerRef.current = null
-  }, [])
-
-  const cancel = useCallback(() => {
+  const status = shallowRef<VoiceInputStatus>('idle')
+  const setStatus = (next: typeof status.value) => {
+    status.value = next
+  }
+  const seconds = shallowRef(0)
+  const setSeconds = (next: typeof seconds.value) => {
+    seconds.value = next
+  }
+  const recordingRef = shallowRef<Recording | null>(null)
+  const controllerRef = shallowRef<AbortController | null>(null)
+  const operationRef = shallowRef(0)
+  const onTextRef = shallowRef(onText)
+  onTextRef.value = onText
+  const cancelOperation = () => {
+    operationRef.value++
+    recordingRef.value?.cancel()
+    recordingRef.value = null
+    controllerRef.value?.abort()
+    controllerRef.value = null
+  }
+  const cancel = () => {
     cancelOperation()
     setStatus('idle')
-  }, [cancelOperation])
-
-  const finish = useCallback(async () => {
-    const recording = recordingRef.current
+  }
+  const finish = async () => {
+    const recording = recordingRef.value
     if (!recording) {
       // 仍在等待麦克风授权时也允许取消；迟到的录音对象会立即释放。
       cancel()
       return
     }
-    const operation = operationRef.current
-    recordingRef.current = null
+    const operation = operationRef.value
+    recordingRef.value = null
     let controller: AbortController | null = null
     try {
       let audio: Blob | null
@@ -69,84 +73,95 @@ export const useVoiceInput = (onText: (text: string) => void) => {
       } finally {
         recording.cancel()
       }
-      if (operationRef.current !== operation || !audio) {
+      if (operationRef.value !== operation || !audio) {
         return
       }
       controller = new AbortController()
-      controllerRef.current = controller
+      controllerRef.value = controller
       setStatus('transcribing')
-      const text = await transcribe(useSettings.getState().apiKey ?? '', audio, controller.signal)
-      if (controller.signal.aborted || operationRef.current !== operation) {
+      const text = await transcribe(useSettingsStore().apiKey ?? '', audio, controller.signal)
+      if (controller.signal.aborted || operationRef.value !== operation) {
         return
       }
       if (text.trim()) {
-        onTextRef.current(text.trim())
+        onTextRef.value(text.trim())
       } else {
         showToast({ key: 'voiceInputEmpty' })
       }
     } catch {
-      if (operationRef.current === operation && !controller?.signal.aborted) {
+      if (operationRef.value === operation && !controller?.signal.aborted) {
         showToast({ key: 'voiceInputFailed' })
       }
     } finally {
-      if (operationRef.current === operation) {
-        controllerRef.current = null
+      if (operationRef.value === operation) {
+        controllerRef.value = null
         setStatus('idle')
       }
     }
-  }, [cancel])
-
-  const toggle = useCallback(async () => {
+  }
+  const toggle = async () => {
     if (!AVAILABLE) {
       return
     }
-    if (status === 'recording') {
+    if (status.value === 'recording') {
       await finish()
       return
     }
-    if (status === 'transcribing') {
+    if (status.value === 'transcribing') {
       cancel()
       return
     }
-    const operation = ++operationRef.current
+    const operation = ++operationRef.value
     setStatus('recording')
     try {
       const recording = await startRecording(() => {
-        if (operationRef.current === operation) {
+        if (operationRef.value === operation) {
           showToast({ key: 'voiceInputLimitReached' })
           void finish()
         }
       })
-      if (operationRef.current !== operation) {
+      if (operationRef.value !== operation) {
         recording.cancel()
         return
       }
-      recordingRef.current = recording
+      recordingRef.value = recording
     } catch (error) {
-      if (operationRef.current === operation) {
+      if (operationRef.value === operation) {
         setStatus('idle')
         showToast(describeRecordingError(error))
       }
     }
-  }, [status, finish, cancel])
-
-  useEffect(() => {
-    if (status !== 'recording') {
-      return
-    }
-    const startedAt = Date.now()
-    setSeconds(0)
-    // 半秒刷新一次，让显示的秒数与实际录音时长保持一致
-    const timer = setInterval(() => {
-      setSeconds(Math.floor((Date.now() - startedAt) / 1000))
-    }, 500)
-    return () => clearInterval(timer)
-  }, [status])
-
-  useEffect(() => cancelOperation, [cancelOperation])
-
-  /** 当前录音的频谱分析节点，未录音时为 null */
-  const getAnalyser = useCallback(() => recordingRef.current?.analyser ?? null, [])
-
-  return { status, seconds, getAnalyser, toggle, cancel, available: AVAILABLE }
+  }
+  watchAfterRender(
+    () => {
+      if (status.value !== 'recording') {
+        return
+      }
+      const startedAt = Date.now()
+      setSeconds(0)
+      // 半秒刷新一次，让显示的秒数与实际录音时长保持一致
+      const timer = setInterval(() => {
+        setSeconds(Math.floor((Date.now() - startedAt) / 1000))
+      }, 500)
+      return () => clearInterval(timer)
+    },
+    () => [status.value]
+  )
+  watchAfterRender(
+    () => cancelOperation,
+    () => [cancelOperation]
+  )
+  const getAnalyser = () => recordingRef.value?.analyser ?? null
+  return {
+    get status() {
+      return status.value
+    },
+    get seconds() {
+      return seconds.value
+    },
+    getAnalyser,
+    toggle,
+    cancel,
+    available: AVAILABLE,
+  }
 }

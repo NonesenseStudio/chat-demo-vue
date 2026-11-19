@@ -1,11 +1,26 @@
+# Dependencies
 node_modules/
-dist/
-build/
 .pnpm-store/
+
+# Build output and tooling caches
+dist/
+dist-standalone/
+build/
 .cache/
+.vite/
+*.tsbuildinfo
+
+# Local tooling output
+/.playwright-mcp/
+tmp/
 *.log
+
+# OS metadata
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment files
 .env
 .env.*
 !.env.example
-tmp/

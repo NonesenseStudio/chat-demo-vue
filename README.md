@@ -1,18 +1,18 @@
-# chat-demo
+# chat-demo-vue
 
 English | [简体中文](README.zh-CN.md)
 
-A static chat demo powered by the DeepSeek API. No application backend is required: the browser connects directly to the configured API service.
+A static chat demo built with Vue 3, TypeScript, and Vite. The browser connects directly to the configured DeepSeek API service.
 
-You can [try the app online](https://deepseek-ai.github.io/chat-demo/) or download the archive from [Releases](https://github.com/deepseek-ai/deepseek-chat-demo/releases), extract it, and double-click `index.html` to use it locally without installation or a build. Enter your API key in Settings before your first chat.
+GitHub Pages is currently unconfigured. Run the project locally using the steps below. Enter your DeepSeek API key in Settings before your first chat.
 
 ## Getting started
 
-Install Node.js 22.12+ and pnpm, then run:
+Use Node.js 24 and pnpm 12, as in the repository workflow.
 
 ```sh
-git clone https://github.com/deepseek-ai/chat-demo.git
-cd chat-demo
+git clone https://github.com/NonesenseStudio/chat-demo-vue.git
+cd chat-demo-vue
 pnpm install
 pnpm dev
 ```
@@ -25,7 +25,7 @@ To build the static site:
 pnpm build
 ```
 
-The output is written to `dist/`. Deploy it to a static web server or open `dist/index.html` directly. Opening the file directly requires browser support for storage on `file://` pages and an API service that permits their cross-origin requests.
+Deploy `dist/` to a static web server or run `pnpm preview` to check it locally. To build a release archive, run `pnpm build:standalone` and package `dist-standalone/`. Extract the archive and open `index.html`. This requires browser support for storage on `file://` pages and an API service that permits their cross-origin requests.
 
 ## Features
 
@@ -45,28 +45,35 @@ Settings → Data → Delete all chats clears all local conversations, original 
 
 ## Development
 
-| Command       | Description                  |
-| ------------- | ---------------------------- |
-| `pnpm dev`    | Start the development server |
-| `pnpm build`  | Build into `dist/`           |
-| `pnpm type`   | Run TypeScript type checks   |
-| `pnpm lint`   | Lint with oxlint             |
-| `pnpm format` | Format with oxfmt            |
+| Command                 | Description                   |
+| ----------------------- | ----------------------------- |
+| `pnpm dev`              | Start the development server  |
+| `pnpm build`            | Build into `dist/`            |
+| `pnpm build:standalone` | Build into `dist-standalone/` |
+| `pnpm preview`          | Preview the production build  |
+| `pnpm type`             | Run TypeScript type checks    |
+| `pnpm lint`             | Lint with oxlint              |
+| `pnpm format`           | Format with oxfmt             |
 
-[rspack.config.ts](rspack.config.ts) uses `https://api.deepseek.com` by default. Use `createConfig({ apiOrigin, devServer })` to customize the API origin and development server proxy.
+[vite.config.ts](vite.config.ts) uses `https://api.deepseek.com` by default. Set `VITE_API_ORIGIN` to override it. Set `VITE_API_ORIGIN=/api` and `VITE_PROXY_TARGET` to the upstream URL to use the development proxy. Deployments can set `VITE_BASE_PATH` to the site subpath.
 
 Chat uses `deepseek-flash` by default through Anthropic-compatible Messages / Files APIs. Speech features use ASR / TTS endpoints. Requests include extensions for search, link reading, titles, and `latest_reminder`, so the configured service must support the corresponding capabilities. Supported attachment formats are determined by server-side validation.
 
 ```text
 src/
-  app/                 Application layout, themes, and global styles
+  App.vue              Root component
+  main.ts              Application entry point
+  assets/styles/       Shared styles and theme variables
+  layouts/             Chat layout
+  composables/         Shared Vue logic
+  stores/              Pinia state
   components/          Chat, settings, Markdown, and other UI components
   i18n/                English and Chinese translations
   services/
     api/               API requests, SSE, and protocol types
     chat/              Conversations, message branches, storage, and history import/export
     markdown/          Markdown parsing, syntax highlighting, and diagrams
-    speech/            Audio recording and read-aloud playback
+    speech/            Audio recording
   utils/               Shared utilities
 ```
 
