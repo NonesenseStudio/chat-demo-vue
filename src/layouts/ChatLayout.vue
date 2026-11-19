@@ -3,11 +3,7 @@ import { computed } from 'vue'
 import { watchAfterRender } from '@/composables/watchAfterRender'
 import { useTranslate } from '@/i18n'
 import { useSettingsStore } from '@/stores/settings'
-import {
-  useIsMobile,
-  useMobileViewport,
-  usePreventPageScroll,
-} from '@/composables/useViewport'
+import { useIsMobile, useMobileViewport, usePreventPageScroll } from '@/composables/useViewport'
 import { useChatStore, retrySaveSessions, selectSession, initChat } from '@/stores/chat'
 import SearchPanel from '@/components/search/SearchPanel.vue'
 import { closeSearchPanel } from '@/stores/searchPanel'
@@ -67,7 +63,11 @@ const setFrame = (el: unknown) => {
       <Sider />
     </template>
     <main class="main">
-      <div v-if="Object.values(chat.sessionSaveErrors).some(Boolean)" class="saveError" role="alert">
+      <div
+        v-if="Object.values(chat.sessionSaveErrors).some(Boolean)"
+        class="saveError"
+        role="alert"
+      >
         <span>{{ t('sessionSaveFailed') }}</span>
         <Button
           variant="outlined"
@@ -80,10 +80,7 @@ const setFrame = (el: unknown) => {
       </div>
       <div class="content">
         <CollapsedSider v-if="siderCollapsed" />
-        <div
-          v-if="!chat.ready || (chat.activeId !== null && !session)"
-          class="loadingView"
-        >
+        <div v-if="!chat.ready || (chat.activeId !== null && !session)" class="loadingView">
           <MobileHeader v-if="isMobile" />
           <div class="loadingState" role="status" aria-live="polite">
             <span>
@@ -93,7 +90,12 @@ const setFrame = (el: unknown) => {
                   : t('sessionLoading')
               }}
             </span>
-            <Button v-if="!chat.ready ? chat.initError : sessionLoadError" variant="outlined" size="m" @click="retryInit">
+            <Button
+              v-if="!chat.ready ? chat.initError : sessionLoadError"
+              variant="outlined"
+              size="m"
+              @click="retryInit"
+            >
               {{ t('retry') }}
             </Button>
           </div>

@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia'
-import {
-  describeUploadError,
-  describeUploadQuota,
-  getUploadPurpose,
-} from '@/services/attachments'
+import { describeUploadError, describeUploadQuota, getUploadPurpose } from '@/services/attachments'
 import { isRetryableApiError } from '@/services/api/errors'
 import { uploadFile } from '@/services/api/client'
 import type { LinkedMessage, TranslationMessage } from '@/i18n'
@@ -83,7 +79,13 @@ export const useUploadsStore = defineStore('uploads', {
         : Object.fromEntries(Object.entries(this.tasks).filter(([key]) => key !== id))
     },
     /** 开始（或复用进行中的）上传，返回服务端 file_id；失败时任务记为 error 并抛出原错误 */
-    upload(apiKey: string, id: string, blob: Blob, name: string, isImage: boolean): Promise<string> {
+    upload(
+      apiKey: string,
+      id: string,
+      blob: Blob,
+      name: string,
+      isImage: boolean
+    ): Promise<string> {
       const pending = pendingUploads.get(id)
       if (pending) {
         return pending.promise

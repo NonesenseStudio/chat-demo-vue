@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { useTranslate } from '@/i18n'
 import type { ApiKeyEditor } from './useApiKeyForm'
 
@@ -14,7 +15,7 @@ const t = useTranslate()
   <button
     v-if="editor.showInput && editor.form.value.trim()"
     type="button"
-    class="mobileConfirm"
+    :class="styles.mobileConfirm"
     :disabled="editor.form.verifying"
     @mousedown.prevent
     @click="() => void editor.form.submit()"

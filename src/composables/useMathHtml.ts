@@ -20,12 +20,9 @@ export const useMathHtml = (input: () => string, isInline: boolean): Ref<MathHtm
   const katex = shallowRef<Katex | null>(null)
   const initial = ensureKatex()
   if (initial instanceof Promise) {
-    initial.then(
-      (value) => {
-        katex.value = value
-      },
-      noop
-    )
+    initial.then((value) => {
+      katex.value = value
+    }, noop)
   } else {
     katex.value = initial
   }

@@ -10,7 +10,7 @@ withDefaults(
 </script>
 
 <template>
-  <button type="button" :class="[variant, size, { block }]">
+  <button type="button" :class="['button', variant, size, { block }]">
     <slot />
   </button>
 </template>

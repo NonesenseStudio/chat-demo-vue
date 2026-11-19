@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { computed, type Component } from 'vue'
 import {
   IconDarkOutline16,
@@ -31,16 +32,19 @@ const label = computed(() => t('avatarMenuSettingsDialogThemeItemLabel'))
 </script>
 
 <template>
-  <div class="theme">
+  <div :class="styles.theme">
     {{ label }}
-    <div role="radiogroup" :aria-label="label" class="themeOptions">
+    <div role="radiogroup" :aria-label="label" :class="styles.themeOptions">
       <button
         v-for="option in themeOptions"
         :key="option.value"
         type="button"
         role="radio"
         :aria-checked="settings.themePreference === option.value"
-        :class="['themeOption', { themeOptionSelected: settings.themePreference === option.value }]"
+        :class="[
+          styles.themeOption,
+          { [styles.themeOptionSelected]: settings.themePreference === option.value },
+        ]"
         @click="settings.setThemePreference(option.value)"
       >
         <component :is="optionIcons[option.value]" />

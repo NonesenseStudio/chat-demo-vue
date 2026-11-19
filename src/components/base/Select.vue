@@ -1,9 +1,13 @@
+<script lang="ts">
+export type SelectOption<T extends string> = { value: T; label: string; lang?: string }
+</script>
+
 <script setup lang="ts" generic="T extends string">
 import { computed, ref } from 'vue'
 import { anchoredStyles, useAnchoredPosition, useDismiss } from './anchored'
 import { IconCheckOutline16, IconChevronDownOutline14 } from './icons'
 
-export type SelectOption<T extends string> = { value: T; label: string; lang?: string }
+defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(
   defineProps<{
@@ -52,6 +56,7 @@ const choose = (option: SelectOption<T>) => {
     aria-haspopup="listbox"
     :aria-expanded="open"
     :disabled="disabled"
+    v-bind="$attrs"
     @click="setOpen(!open)"
   >
     <span v-if="current" :lang="current.lang">{{ current.label }}</span>

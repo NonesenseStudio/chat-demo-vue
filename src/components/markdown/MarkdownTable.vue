@@ -26,7 +26,10 @@ const columnCount = computed(() => props.node.children[0]?.children.length)
             <MarkdownInline :nodes="cell.children" />
           </td>
           <!-- 补齐到列数 -->
-          <td v-for="idx in Math.max(0, (columnCount ?? 0) - row.children.length)" :key="`ptd_${idx}`" />
+          <td
+            v-for="idx in Math.max(0, (columnCount ?? 0) - row.children.length)"
+            :key="`ptd_${idx}`"
+          />
         </tr>
       </tbody>
     </table>

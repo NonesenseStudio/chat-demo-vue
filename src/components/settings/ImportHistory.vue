@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { ref } from 'vue'
 import { useTranslate } from '@/i18n'
 import { IconUploadOutline14 } from '@/components/base/icons'
@@ -34,7 +35,7 @@ const onFileChange = (event: Event) => {
     <Button
       variant="outlined"
       size="m"
-      class="cellButton uploadButton"
+      :class="[styles.cellButton, styles.uploadButton]"
       :disabled="disabled"
       @click="inputRef?.click()"
     >

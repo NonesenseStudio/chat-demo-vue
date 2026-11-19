@@ -88,12 +88,7 @@ const openOriginal = () => window.open(url.value ?? undefined, '_blank', 'norefe
       <span v-if="failedUrl === url" class="failedIcon" role="img" :aria-label="file.name">
         <IconPhotoErrorFill20 />
       </span>
-      <img
-        v-else
-        :src="url"
-        :alt="file.name"
-        @error="failedUrl = url ?? null"
-      />
+      <img v-else :src="url" :alt="file.name" @error="failedUrl = url ?? null" />
       <div class="overlay">
         <span class="spinner" />
       </div>
@@ -109,12 +104,7 @@ const openOriginal = () => window.open(url.value ?? undefined, '_blank', 'norefe
       <span v-if="failedUrl === url || !url" class="failedIcon">
         <IconPhotoErrorFill20 />
       </span>
-      <img
-        v-else
-        :src="url"
-        :alt="file.name"
-        @error="failedUrl = url ?? null"
-      />
+      <img v-else :src="url" :alt="file.name" @error="failedUrl = url ?? null" />
       <span v-if="errorText && errorText !== t('uploadFileStatusFailed')" class="reason">
         {{ errorText }}
       </span>
@@ -131,12 +121,7 @@ const openOriginal = () => window.open(url.value ?? undefined, '_blank', 'norefe
         <span v-if="failedUrl === url" class="failedIcon" role="img" :aria-label="file.name">
           <IconPhotoErrorFill20 />
         </span>
-        <img
-          v-else
-          :src="url"
-          :alt="file.name"
-          @error="failedUrl = url ?? null"
-        />
+        <img v-else :src="url" :alt="file.name" @error="failedUrl = url ?? null" />
         <div :class="['overlay', 'retryOverlay']">
           <IconRefreshOutline16 />
         </div>

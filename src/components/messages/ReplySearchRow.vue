@@ -4,11 +4,7 @@ import { watchAfterRender } from '@/composables/watchAfterRender'
 import { useTranslate } from '@/i18n'
 import { IconSearchOutline16, IconSearchWarningOutline16 } from '@/components/base/icons'
 import type { AssistantMessage } from '@/services/chat/types'
-import {
-  isDeepSearchKind,
-  isImageSearchKind,
-  type SearchStep,
-} from '@/services/chat/view'
+import { isDeepSearchKind, isImageSearchKind, type SearchStep } from '@/services/chat/view'
 import { useSearchPanelStore } from '@/stores/searchPanel'
 import SiteThumbnails from '@/components/search/SiteThumbnails.vue'
 
@@ -52,10 +48,7 @@ const currentQuery = computed(() => props.step.queries[tick.value % props.step.q
 
 <template>
   <div
-    :class="[
-      'row',
-      { withLine: !isLast, clickable, active: panel.entry === panelEntry },
-    ]"
+    :class="['row', { withLine: !isLast, clickable, active: panel.entry === panelEntry }]"
     @click="clickable ? panel.toggle(panelEntry, step.results) : undefined"
   >
     <span class="rowIcon">

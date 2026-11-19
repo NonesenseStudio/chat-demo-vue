@@ -36,11 +36,7 @@ export const useDraftsStore = defineStore('drafts', {
       }
     },
     /** 整批校验通过后才创建预览和开始上传。 */
-    addFiles(
-      sessionId: string | null,
-      files: File[],
-      apiKey: string
-    ): TranslationMessage | null {
+    addFiles(sessionId: string | null, files: File[], apiKey: string): TranslationMessage | null {
       if (files.length === 0) {
         return null
       }
@@ -156,5 +152,4 @@ const releaseAttachment = (attachment: DraftAttachment, cancel: boolean) => {
 }
 
 /** 便捷读取（非响应式场景） */
-export const getDraft = (sessionId: string | null): Draft =>
-  useDraftsStore().getDraft(sessionId)
+export const getDraft = (sessionId: string | null): Draft => useDraftsStore().getDraft(sessionId)

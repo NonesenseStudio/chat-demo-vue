@@ -40,9 +40,7 @@ const select = (messageId: string) => {
     >
       <IconChevronRightOutline14 />
     </IconButton>
-    <span class="count">
-      {{ versions.index + 1 }} / {{ versions.ids.length }}
-    </span>
+    <span class="count"> {{ versions.index + 1 }} / {{ versions.ids.length }} </span>
     <IconButton
       :aria-label="t('nextVersion')"
       :disabled="disabled || versions.index >= versions.ids.length - 1"

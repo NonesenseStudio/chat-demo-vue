@@ -1,3 +1,8 @@
+<script lang="ts">
+/** 当前打开的弹窗，后打开的在末尾；叠放时 Esc 只关闭最上层 */
+const openModals: object[] = []
+</script>
+
 <script setup lang="ts">
 import { useId } from 'vue'
 import { watchAfterRender } from '@/composables/watchAfterRender'
@@ -20,9 +25,6 @@ const props = withDefaults(
 
 const emit = defineEmits<{ close: [] }>()
 
-/** 当前打开的弹窗，后打开的在末尾；叠放时 Esc 只关闭最上层 */
-const openModals: object[] = []
-
 const t = useTranslate()
 const titleId = useId()
 watchAfterRender(() => {
@@ -43,7 +45,7 @@ watchAfterRender(() => {
 
 <template>
   <Teleport to="body">
-    <div class="overlay" @mousedown="($event.target === $event.currentTarget) && $emit('close')">
+    <div class="overlay" @mousedown="$event.target === $event.currentTarget && $emit('close')">
       <div
         :class="['content', dialogClass]"
         role="dialog"

@@ -22,9 +22,7 @@ const sanitizeUrl = (url: string) => {
 }
 
 const href = computed(() => sanitizeUrl(props.node.url))
-const plain = computed(
-  () => props.node.url.startsWith('#') || props.node.url.startsWith('mailto:')
-)
+const plain = computed(() => props.node.url.startsWith('#') || props.node.url.startsWith('mailto:'))
 </script>
 
 <template>

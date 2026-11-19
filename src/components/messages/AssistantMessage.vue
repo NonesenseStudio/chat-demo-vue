@@ -121,10 +121,9 @@ const summaryEntry = computed(() => `${props.message.id}-summary`)
       <SiteThumbnails :sources="view.searchResults" />
       <span>
         {{
-          t(
-            view.searchResults.length === 1 ? 'messageSearchSummary' : 'messageSearchSummaries',
-            { count: view.searchResults.length }
-          )
+          t(view.searchResults.length === 1 ? 'messageSearchSummary' : 'messageSearchSummaries', {
+            count: view.searchResults.length,
+          })
         }}
       </span>
     </div>
@@ -145,10 +144,12 @@ const summaryEntry = computed(() => `${props.message.id}-summary`)
           :tooltip="t('regenerate')"
           tooltip-placement="bottom"
           :disabled="busy || refused"
-          @click="() => {
-            stopReadAloud()
-            chat.regenerateReply(sessionId, message.id)
-          }"
+          @click="
+            () => {
+              stopReadAloud()
+              chat.regenerateReply(sessionId, message.id)
+            }
+          "
         >
           <IconRefreshOutline16 />
         </IconButton>
@@ -159,10 +160,12 @@ const summaryEntry = computed(() => `${props.message.id}-summary`)
         size="s"
         class="continueButton"
         :disabled="busy"
-        @click="() => {
-          stopReadAloud()
-          chat.continueReply(sessionId, message.id)
-        }"
+        @click="
+          () => {
+            stopReadAloud()
+            chat.continueReply(sessionId, message.id)
+          }
+        "
       >
         {{ t('continueGenerating') }}
       </Button>

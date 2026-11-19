@@ -24,7 +24,12 @@ const sources = computed(() => panel.sources)
       </IconButton>
     </div>
     <div class="content">
-      <SourceCard v-for="source in sources" :key="source.url" :source="source" class="search-panel-item" />
+      <SourceCard
+        v-for="source in sources"
+        :key="source.url"
+        :source="source"
+        class="search-panel-item"
+      />
     </div>
   </aside>
 </template>

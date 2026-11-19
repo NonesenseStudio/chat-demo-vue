@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { computed } from 'vue'
 import { useTranslate } from '@/i18n'
 import Select from '@/components/base/Select.vue'
@@ -17,44 +18,50 @@ const province = computed(() =>
 </script>
 
 <template>
-  <SettingCell :label="t('settingsLocation')" :status="null" class-name="locationCell">
-    <div class="locationSelectors">
+  <SettingCell :label="t('settingsLocation')" :status="null" :class-name="styles.locationCell">
+    <div :class="styles.locationSelectors">
       <template v-if="isChineseBrowser()">
         <Select
-          class="provinceSelect"
+          :class="styles.provinceSelect"
           :aria-label="t('settingsLocationProvince')"
           :value="province?.code ?? ''"
           :placeholder="t('settingsLocationProvince')"
           :options="provinces.map((item) => ({ value: item.code, label: item.name }))"
-          @change="(value) => {
-            if (value !== province?.code) {
-              settings.setLocation({ region: 'CN', province: value })
+          @change="
+            (value) => {
+              if (value !== province?.code) {
+                settings.setLocation({ region: 'CN', province: value })
+              }
             }
-          }"
+          "
         />
         <Select
-          class="citySelect"
+          :class="styles.citySelect"
           :aria-label="t('settingsLocationCity')"
           :value="province ? (location?.city ?? '') : ''"
           :disabled="!province?.cities.length"
           :placeholder="t('settingsLocationCity')"
           :options="province?.cities.map((item) => ({ value: item.code, label: item.name })) ?? []"
-          @change="(value) => {
-            if (province) {
-              settings.setLocation({ region: 'CN', province: province.code, city: value })
+          @change="
+            (value) => {
+              if (province) {
+                settings.setLocation({ region: 'CN', province: province.code, city: value })
+              }
             }
-          }"
+          "
         />
       </template>
       <Select
         v-else
-        class="regionSelect"
+        :class="styles.regionSelect"
         :aria-label="t('settingsLocationRegion')"
         :value="location?.region ?? ''"
         :placeholder="t('settingsLocationRegion')"
-        :options="regionCodes
-          .map((code) => ({ value: code, label: getRegionName(code, settings.locale) }))
-          .sort((a, b) => a.label.localeCompare(b.label, settings.locale))"
+        :options="
+          regionCodes
+            .map((code) => ({ value: code, label: getRegionName(code, settings.locale) }))
+            .sort((a, b) => a.label.localeCompare(b.label, settings.locale))
+        "
         @change="(value) => settings.setLocation({ region: value })"
       />
     </div>

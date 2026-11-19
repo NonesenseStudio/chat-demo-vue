@@ -11,10 +11,7 @@ import {
 import { useSettingsStore } from '@/stores/settings'
 import { useIsMobile } from '@/composables/useViewport'
 import { useChatStore } from '@/stores/chat'
-import {
-  EMPTY_DRAFT,
-  useDraftsStore,
-} from '@/stores/drafts'
+import { EMPTY_DRAFT, useDraftsStore } from '@/stores/drafts'
 import { stopReadAloud } from '@/stores/readAloud'
 import IconButton from '@/components/base/IconButton.vue'
 import Tooltip from '@/components/base/Tooltip.vue'
@@ -43,9 +40,7 @@ const isMobile = useIsMobile()
 
 const draft = computed(() => drafts.drafts.get(props.sessionId) ?? EMPTY_DRAFT)
 const setText = (value: string) => drafts.setText(props.sessionId, value)
-const draftReady = computed(
-  () => drafts.prepareMessage(draft.value, uploads.tasks) !== null
-)
+const draftReady = computed(() => drafts.prepareMessage(draft.value, uploads.tasks) !== null)
 const streaming = computed(
   () => props.sessionId !== null && Object.hasOwn(chat.streaming, props.sessionId)
 )
@@ -145,11 +140,7 @@ const send = () => {
 }
 const onTextareaMousedown = (event: MouseEvent) => {
   // 首次点击时手动聚焦，避免 Safari 把整个页面滚到输入框位置。
-  if (
-    isMobile.value &&
-    event.button === 0 &&
-    document.activeElement !== event.currentTarget
-  ) {
+  if (isMobile.value && event.button === 0 && document.activeElement !== event.currentTarget) {
     event.preventDefault()
     ;(event.currentTarget as HTMLTextAreaElement).focus({ preventScroll: true })
   }
@@ -166,17 +157,15 @@ const onPaste = (event: ClipboardEvent) => {
 <template>
   <div
     :class="['wrapper', props.sessionId === null ? 'home' : 'session']"
-    @click="($event) => {
-      if ($event.target === $event.currentTarget) {
-        textareaRef?.focus({ preventScroll: true })
+    @click="
+      ($event) => {
+        if ($event.target === $event.currentTarget) {
+          textareaRef?.focus({ preventScroll: true })
+        }
       }
-    }"
+    "
   >
-    <DraftAttachments
-      :items="draft.attachments"
-      :on-retry="retryFile"
-      :on-remove="removeFile"
-    />
+    <DraftAttachments :items="draft.attachments" :on-retry="retryFile" :on-remove="removeFile" />
     <div class="textareaWrapper">
       <!-- 移动端不自动聚焦，避免一打开就弹出键盘 -->
       <textarea
@@ -189,12 +178,14 @@ const onPaste = (event: ClipboardEvent) => {
         :value="draft.text"
         @input="setText(($event.currentTarget as HTMLTextAreaElement).value)"
         @mousedown="onTextareaMousedown"
-        @keydown="($event) => {
-          if ($event.key === 'Enter' && !$event.shiftKey && !$event.isComposing) {
-            $event.preventDefault()
-            send()
+        @keydown="
+          ($event) => {
+            if ($event.key === 'Enter' && !$event.shiftKey && !$event.isComposing) {
+              $event.preventDefault()
+              send()
+            }
           }
-        }"
+        "
         @paste="onPaste"
       />
       <Spectrum v-if="recording && isMobile" :get-analyser="voice.getAnalyser" />
@@ -235,11 +226,13 @@ const onPaste = (event: ClipboardEvent) => {
           :status="voice.status"
           :disabled="!voice.available"
           :seconds="voice.seconds"
-          @click="() => {
-            if (voice.status !== 'idle' || (!chat.importingHistory && ensureApiKey())) {
-              void voice.toggle()
+          @click="
+            () => {
+              if (voice.status !== 'idle' || (!chat.importingHistory && ensureApiKey())) {
+                void voice.toggle()
+              }
             }
-          }"
+          "
         />
         <IconButton
           size="m"
@@ -256,23 +249,27 @@ const onPaste = (event: ClipboardEvent) => {
           multiple
           hidden
           :accept="ACCEPT"
-          @change="($event) => {
-            const input = $event.currentTarget as HTMLInputElement
-            acceptFiles(Array.from(input.files ?? []))
-            input.value = ''
-          }"
+          @change="
+            ($event) => {
+              const input = $event.currentTarget as HTMLInputElement
+              acceptFiles(Array.from(input.files ?? []))
+              input.value = ''
+            }
+          "
         />
         <button
           v-if="streaming && props.sessionId"
           type="button"
           class="sendButton"
           :aria-label="t('chatInputStopButtonTooltip')"
-          @click="() => {
-            stopReadAloud()
-            if (props.sessionId !== null) {
-              chat.stopReply(props.sessionId)
+          @click="
+            () => {
+              stopReadAloud()
+              if (props.sessionId !== null) {
+                chat.stopReply(props.sessionId)
+              }
             }
-          }"
+          "
         >
           <IconStopFill16 />
         </button>

@@ -96,13 +96,15 @@ const startEditing = () => {
         v-for="file in message.files"
         :key="file.id"
         :file="file"
-        :on-retry="retryUploadId
-          ? () => {
-              if (retryUploadId) {
-                chat.retryUpload(sessionId, retryUploadId)
+        :on-retry="
+          retryUploadId
+            ? () => {
+                if (retryUploadId) {
+                  chat.retryUpload(sessionId, retryUploadId)
+                }
               }
-            }
-          : null"
+            : null
+        "
       />
     </div>
     <div v-if="editing" class="editor">

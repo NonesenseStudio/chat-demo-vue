@@ -2,6 +2,8 @@
 import Tooltip from './Tooltip.vue'
 import type { TooltipPlacement } from './Tooltip.vue'
 
+defineOptions({ inheritAttrs: false })
+
 withDefaults(
   defineProps<{
     size?: 'xs' | 'm' | 'xl'
@@ -16,11 +18,11 @@ withDefaults(
 
 <template>
   <Tooltip v-if="tooltip" :content="tooltip" :placement="tooltipPlacement">
-    <button type="button" :class="['button', size, tone]" :aria-label="tooltip">
+    <button type="button" :class="['button', size, tone]" :aria-label="tooltip" v-bind="$attrs">
       <slot />
     </button>
   </Tooltip>
-  <button v-else type="button" :class="['button', size, tone]" :aria-label="tooltip">
+  <button v-else type="button" :class="['button', size, tone]" v-bind="$attrs">
     <slot />
   </button>
 </template>

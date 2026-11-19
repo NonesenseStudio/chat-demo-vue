@@ -1,9 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "import"
-  ],
+  "plugins": ["typescript", "import"],
   "categories": {
     "correctness": "off"
   },
@@ -76,10 +73,7 @@
     "import/no-default-export": "error",
     "no-console": "error",
     "import/no-cycle": "error",
-    "curly": [
-      "error",
-      "all"
-    ],
+    "curly": ["error", "all"],
     "no-alert": "error",
     "typescript/ban-ts-comment": [
       "error",

@@ -46,12 +46,7 @@ const showReason = computed(
     <img :src="item.previewUrl" :alt="item.file.name" />
     <div v-if="status === 'uploading'" class="uploading" />
     <Tooltip v-if="failed && retryable" :content="retryLabel">
-      <button
-        type="button"
-        class="failed"
-        :aria-label="retryLabel"
-        @click="emit('retry')"
-      >
+      <button type="button" class="failed" :aria-label="retryLabel" @click="emit('retry')">
         <IconRefreshOutline16 />
         <span v-if="showReason" class="failedReason">{{ error }}</span>
       </button>

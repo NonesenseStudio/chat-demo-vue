@@ -3,11 +3,7 @@ import { computed, ref } from 'vue'
 import { watchAfterRender } from '@/composables/watchAfterRender'
 import { useTranslate } from '@/i18n'
 import Prism from 'prismjs'
-import {
-  getHighlightLang,
-  isHighlightLoaded,
-  loadHighlight,
-} from '@/services/markdown/highlight'
+import { getHighlightLang, isHighlightLoaded, loadHighlight } from '@/services/markdown/highlight'
 import { IconCheckOutline16, IconCopyOutline16 } from '@/components/base/icons'
 import { showToast } from '@/stores/toast'
 import { copyText } from '@/utils/clipboard'

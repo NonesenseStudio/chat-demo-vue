@@ -2,11 +2,7 @@
 import { computed, ref } from 'vue'
 import { watchAfterRender } from '@/composables/watchAfterRender'
 import { useTranslate } from '@/i18n'
-import {
-  IconPanelLeftOutline16,
-  IconSettingsOutline16,
-  NewChatIcon,
-} from '@/components/base/icons'
+import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '@/components/base/icons'
 import { useSettingsStore } from '@/stores/settings'
 import { groupSessions } from '@/services/chat/sessionGroups'
 import { useChatStore } from '@/stores/chat'

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { useTranslate } from '@/i18n'
 import Button from '@/components/base/Button.vue'
 import Modal from '@/components/base/Modal.vue'
@@ -15,7 +16,7 @@ const t = useTranslate()
   <!-- 覆盖导入的二次确认，叠在设置弹窗上 -->
   <Modal
     :title="t('historyImportConfirmTitle')"
-    dialog-class="importConfirm"
+    :dialog-class="styles.importConfirm"
     @close="historyImport.cancel()"
   >
     <template #footer>
@@ -26,6 +27,6 @@ const t = useTranslate()
         {{ t('historyImportConfirm') }}
       </Button>
     </template>
-    <div class="importConfirmText">{{ t('historyImportConfirmDescription') }}</div>
+    <div :class="styles.importConfirmText">{{ t('historyImportConfirmDescription') }}</div>
   </Modal>
 </template>

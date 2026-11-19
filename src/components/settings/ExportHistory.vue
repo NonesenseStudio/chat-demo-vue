@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { computed, ref } from 'vue'
 import { useTranslate } from '@/i18n'
 import { IconDownloadOutline16 } from '@/components/base/icons'
@@ -45,7 +46,7 @@ const onExport = async () => {
     <Button
       variant="outlined"
       size="m"
-      class="cellButton"
+      :class="styles.cellButton"
       :disabled="props.disabled || busy || empty"
       @click="() => void onExport()"
     >

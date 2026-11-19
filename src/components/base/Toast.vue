@@ -23,7 +23,12 @@ const content = computed(() => {
 </script>
 
 <template>
-  <div v-if="content.text" :key="toast.id" :class="['toast', { error: content.error }]" role="status">
+  <div
+    v-if="content.text"
+    :key="toast.id"
+    :class="['toast', { error: content.error }]"
+    role="status"
+  >
     <span v-if="content.error" class="icon">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path

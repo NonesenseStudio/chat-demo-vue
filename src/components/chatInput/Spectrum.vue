@@ -52,8 +52,7 @@ watchAfterRender(
     const targets = new Float32Array(count.value)
     const tilts = new Float32Array(count.value)
     for (let index = 0; index < count.value; index += 1) {
-      tilts[index] =
-        TILT_DB_PER_OCTAVE * Math.log2(FREQ_HIGH / FREQ_LOW) * (index / count.value)
+      tilts[index] = TILT_DB_PER_OCTAVE * Math.log2(FREQ_HIGH / FREQ_LOW) * (index / count.value)
     }
     let data = new Float32Array(0)
     let ranges: Range[] = []

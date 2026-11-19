@@ -67,10 +67,7 @@ const stepKey = (step: Step, index: number) =>
 </script>
 
 <template>
-  <div
-    v-if="view.steps.length > 0 || (message.thinking && streaming)"
-    class="area"
-  >
+  <div v-if="view.steps.length > 0 || (message.thinking && streaming)" class="area">
     <div v-if="title" class="title" @click="open = !open">
       <span :class="['titleIcon', { stoppedIcon: stopped }]">
         <IconThinkOutline16 />

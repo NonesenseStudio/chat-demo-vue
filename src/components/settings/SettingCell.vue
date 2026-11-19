@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { computed } from 'vue'
 import { useTranslate } from '@/i18n'
 import type { Status } from './settingStatus'
@@ -26,10 +27,13 @@ const statusText = computed(() =>
 </script>
 
 <template>
-  <div :class="['cell', 'row', className]">
-    <div class="text">
-      <div class="label">{{ label }}</div>
-      <div v-if="status || description" :class="['description', { error: status?.error }]">
+  <div :class="[styles.cell, styles.row, className]">
+    <div :class="styles.text">
+      <div :class="styles.label">{{ label }}</div>
+      <div
+        v-if="status || description"
+        :class="[styles.description, { [styles.error]: status?.error }]"
+      >
         {{ statusText ?? description }}
       </div>
     </div>

@@ -16,11 +16,7 @@ onMounted(() => {
     document.documentElement.lang = settings.locale
   }
   syncLanguage()
-  cleanup = [
-    settings.$subscribe(syncLanguage),
-    onUploadNotice(showToast),
-    bindChatPersistence(),
-  ]
+  cleanup = [settings.$subscribe(syncLanguage), onUploadNotice(showToast), bindChatPersistence()]
   void initChat()
   ensureApiKey()
 })

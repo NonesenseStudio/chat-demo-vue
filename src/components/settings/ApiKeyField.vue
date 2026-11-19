@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import styles from './Settings.module.css'
 import { IconEditOutline16 } from '@/components/base/icons'
 import { useIsMobile } from '@/composables/useViewport'
 import IconButton from '@/components/base/IconButton.vue'
@@ -24,11 +25,11 @@ const onBlur = (editor: ApiKeyEditor) => {
 
 <template>
   <!-- API Key：保存后只显示掩码，点编辑按钮才能重新输入 -->
-  <div class="cell">
-    <div class="apiKey">
-      <div class="label">{{ t('apiKeyStart') }}</div>
-      <div v-if="editor.settings.apiKey && !editor.editing" class="apiKeySaved">
-        <span class="apiKeyMask">{{ '*'.repeat(editor.settings.apiKey.length) }}</span>
+  <div :class="styles.cell">
+    <div :class="styles.apiKey">
+      <div :class="styles.label">{{ t('apiKeyStart') }}</div>
+      <div v-if="editor.settings.apiKey && !editor.editing" :class="styles.apiKeySaved">
+        <span :class="styles.apiKeyMask">{{ '*'.repeat(editor.settings.apiKey.length) }}</span>
         <IconButton
           tone="primary"
           :aria-label="t('apiKeyEdit')"
@@ -38,7 +39,7 @@ const onBlur = (editor: ApiKeyEditor) => {
           <IconEditOutline16 />
         </IconButton>
       </div>
-      <div v-else class="apiKeyInput">
+      <div v-else :class="styles.apiKeyInput">
         <input
           type="password"
           :placeholder="t('apiKeyPlaceholder')"
@@ -47,19 +48,21 @@ const onBlur = (editor: ApiKeyEditor) => {
           :autofocus="!isMobile || editor.editing"
           :value="editor.form.value"
           @input="editor.form.value = ($event.currentTarget as HTMLInputElement).value"
-          @keydown="($event) => {
-            if ($event.key === 'Enter' && !$event.isComposing) {
-              submit(editor)
+          @keydown="
+            ($event) => {
+              if ($event.key === 'Enter' && !$event.isComposing) {
+                submit(editor)
+              }
             }
-          }"
+          "
           @blur="onBlur(editor)"
         />
         <template v-if="!isMobile && editor.form.value.trim()">
-          <span class="divider" />
+          <span :class="styles.divider" />
           <!-- 保持输入框焦点 -->
           <button
             type="button"
-            class="confirm"
+            :class="styles.confirm"
             :disabled="editor.form.verifying"
             @mousedown.prevent
             @click="submit(editor)"
@@ -68,7 +71,7 @@ const onBlur = (editor: ApiKeyEditor) => {
           </button>
         </template>
       </div>
-      <div v-if="editor.showInput && editor.form.error" class="error">
+      <div v-if="editor.showInput && editor.form.error" :class="styles.error">
         {{ editor.form.error }}
       </div>
     </div>

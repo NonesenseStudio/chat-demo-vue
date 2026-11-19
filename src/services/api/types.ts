@@ -28,11 +28,7 @@ export type ThinkingBlock = { type: 'thinking'; thinking: string; signature: str
 
 /** 服务端识别调用所属联网能力用的 kind，区分文字搜索、图搜及边想边搜。 */
 export type ServerToolKind =
-  | 'search'
-  | 'deep_search'
-  | 'read_link'
-  | 'image_search'
-  | 'deep_image_search'
+  'search' | 'deep_search' | 'read_link' | 'image_search' | 'deep_image_search'
 
 /** server_tool_use 的四种动作，input 结构由 action 决定 */
 export type ServerToolInput =
@@ -114,9 +110,7 @@ export type WebFetchToolResultBlock = {
 }
 
 export type ServerToolBlock =
-  | ServerToolUseBlock
-  | WebSearchToolResultBlock
-  | WebFetchToolResultBlock
+  ServerToolUseBlock | WebSearchToolResultBlock | WebFetchToolResultBlock
 
 /** 用于识别客户端工具调用的内容块类型 */
 export type ToolUseBlock = { type: 'tool_use'; id: string; name: string; input: unknown }

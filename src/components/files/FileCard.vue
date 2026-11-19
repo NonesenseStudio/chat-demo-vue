@@ -50,7 +50,14 @@ const title = computed(() =>
 
 <template>
   <div
-    :class="['card', { editable: !!onRemove, failed: status === 'error' && (onRemove || onRetry), clickable: !!onClick }]"
+    :class="[
+      'card',
+      {
+        editable: !!onRemove,
+        failed: status === 'error' && (onRemove || onRetry),
+        clickable: !!onClick,
+      },
+    ]"
     :title="title"
     @click="onClick?.()"
   >

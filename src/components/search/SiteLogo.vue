@@ -85,4 +85,3 @@ withDefaults(
   height: 70%;
 }
 </style>
-
